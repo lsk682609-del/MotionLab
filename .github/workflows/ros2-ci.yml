@@ -1,0 +1,25 @@
+name: ROS 2 CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+
+    steps:
+      - name: Build and test workspace
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: motionlab_basics motionlab_control_cpp motionlab_robot_description motionlab_simulation
+          target-ros2-distro: jazzy
+          import-token: ${{ secrets.GITHUB_TOKEN }}
