@@ -109,6 +109,7 @@ def generate_launch_description():
                 parameters=[{
                     "use_sim_time": True,
                     "stop_distance": stop_distance,
+                    "release_margin": 0.1,
                     "front_angle_deg": 30.0
                 }]
             )

@@ -12,6 +12,7 @@ public:
   LidarSafetyStop() : Node("lidar_safety_stop")
   {
     stop_distance_ = declare_parameter<double>("stop_distance", 0.6);
+    release_margin_ = declare_parameter<double>("release_margin", 0.1);
     front_angle_ = declare_parameter<double>("front_angle_deg", 30.0) * M_PI / 180.0;
 
     cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
@@ -49,7 +50,7 @@ public:
           }
         }
 
-        obstacle_detected_ = min_front_range_ < stop_distance_;
+        if (!obstacle_detected_ && min_front_range_ < stop_distance_) { obstacle_detected_ = true; RCLCPP_WARN(get_logger(), "Safety state: STOP at %.2f m", min_front_range_); } else if (obstacle_detected_ && min_front_range_ > stop_distance_ + release_margin_) { obstacle_detected_ = false; RCLCPP_INFO(get_logger(), "Safety state: CLEAR at %.2f m", min_front_range_); }
       });
 
     RCLCPP_INFO(
@@ -60,6 +61,7 @@ public:
 
 private:
   double stop_distance_;
+  double release_margin_;
   double front_angle_;
   double min_front_range_{std::numeric_limits<double>::infinity()};
   bool obstacle_detected_{true};
