@@ -2,12 +2,20 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    use_rviz = LaunchConfiguration('use_rviz')
+    declare_use_rviz = DeclareLaunchArgument(
+        'use_rviz',
+        default_value='true',
+        description='Start RViz2 visualization'
+    )
     simulation_share = get_package_share_directory(
         'motionlab_simulation'
     )
@@ -91,6 +99,7 @@ def generate_launch_description():
         period=4.0,
         actions=[
             Node(
+                condition=IfCondition(use_rviz),
                 package='rviz2',
                 executable='rviz2',
                 arguments=['-d', rviz_config],
@@ -104,6 +113,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        declare_use_rviz,
         simulation_launch,
         map_to_odom,
         planner,
