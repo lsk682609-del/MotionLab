@@ -20,3 +20,13 @@
 - Gazebo Sim
 - RViz2
 - Git
+
+## 构建
+
+cd ~/motionlab_ws
+colcon build --symlink-install
+source install/setup.bash
+
+## 一键运行
+
+ros2 launch motionlab_simulation navigation_demo.launch.py
