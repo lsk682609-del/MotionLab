@@ -11,11 +11,18 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     use_rviz = LaunchConfiguration('use_rviz')
+    lookahead_distance = LaunchConfiguration('lookahead_distance')
     declare_use_rviz = DeclareLaunchArgument(
         'use_rviz',
         default_value='true',
         description='Start RViz2 visualization'
     )
+    declare_lookahead_distance = DeclareLaunchArgument(
+        'lookahead_distance',
+        default_value='0.6',
+        description='Pure Pursuit lookahead distance in meters'
+    )
+
     simulation_share = get_package_share_directory(
         'motionlab_simulation'
     )
@@ -79,7 +86,7 @@ def generate_launch_description():
                 parameters=[
                     {
                         'use_sim_time': True,
-                        'lookahead_distance': 0.6,
+                        'lookahead_distance': lookahead_distance,
                         'nominal_speed': 0.25,
                         'max_angular_speed': 1.0,
                         'goal_tolerance': 0.15
@@ -114,6 +121,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         declare_use_rviz,
+        declare_lookahead_distance,
         simulation_launch,
         map_to_odom,
         planner,
