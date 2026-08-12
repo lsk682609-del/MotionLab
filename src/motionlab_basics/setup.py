@@ -26,8 +26,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-        'circle_controller = motionlab_basics.circle_controller:main',       
-        'pose_monitor = motionlab_basics.pose_monitor:main',
-        'go_to_goal = motionlab_basics.go_to_goal:main',      ],
+            'circle_controller = motionlab_basics.circle_controller:main',
+            'pose_monitor = motionlab_basics.pose_monitor:main',
+            'go_to_goal = motionlab_basics.go_to_goal:main',],
     },
 )

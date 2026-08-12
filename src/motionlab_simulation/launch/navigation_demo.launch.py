@@ -3,8 +3,8 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -24,7 +24,10 @@ def generate_launch_description():
         description='Pure Pursuit lookahead distance in meters'
     )
 
-    declare_stop_distance = DeclareLaunchArgument('stop_distance', default_value='0.4', description='Emergency stop distance in meters')
+    declare_stop_distance = DeclareLaunchArgument(
+        'stop_distance',
+        default_value='0.4',
+        description='Emergency stop distance in meters')
 
     simulation_share = get_package_share_directory(
         'motionlab_simulation'
@@ -103,14 +106,14 @@ def generate_launch_description():
         period=4.0,
         actions=[
             Node(
-                package="motionlab_control_cpp",
-                executable="lidar_safety_stop",
-                output="screen",
+                package='motionlab_control_cpp',
+                executable='lidar_safety_stop',
+                output='screen',
                 parameters=[{
-                    "use_sim_time": True,
-                    "stop_distance": stop_distance,
-                    "release_margin": 0.1,
-                    "front_angle_deg": 30.0
+                    'use_sim_time': True,
+                    'stop_distance': stop_distance,
+                    'release_margin': 0.1,
+                    'front_angle_deg': 30.0
                 }]
             )
         ]

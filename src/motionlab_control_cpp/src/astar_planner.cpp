@@ -49,12 +49,12 @@ public:
     path_publisher_ =
       create_publisher<nav_msgs::msg::Path>(
         "/planned_path", qos);
-map_publisher_ =
-  create_publisher<nav_msgs::msg::OccupancyGrid>(
+    map_publisher_ =
+      create_publisher<nav_msgs::msg::OccupancyGrid>(
     "/grid_map", qos);
 
     build_obstacle_map();
-publish_grid_map();
+    publish_grid_map();
 
     const auto path_indices = plan();
 
@@ -112,7 +112,7 @@ private:
     return std::hypot(
       static_cast<double>(goal_x - x),
       static_cast<double>(goal_y - y)) *
-      grid_resolution_;
+           grid_resolution_;
   }
 
   void build_obstacle_map()
@@ -137,40 +137,40 @@ private:
       get_logger(),
       "Obstacle map created");
   }
-void publish_grid_map()
-{
-  nav_msgs::msg::OccupancyGrid map;
-
-  map.header.stamp = now();
-  map.header.frame_id = "map";
-
-  map.info.resolution = grid_resolution_;
-  map.info.width = grid_width_;
-  map.info.height = grid_height_;
-
-  map.info.origin.position.x =
-    grid_origin_ - grid_resolution_ / 2.0;
-
-  map.info.origin.position.y =
-    grid_origin_ - grid_resolution_ / 2.0;
-
-  map.info.origin.orientation.w = 1.0;
-
-  map.data.resize(occupied_.size());
-
-  for (std::size_t i = 0;
-    i < occupied_.size(); ++i)
+  void publish_grid_map()
   {
-    map.data[i] =
-      occupied_[i] ? 100 : 0;
-  }
+    nav_msgs::msg::OccupancyGrid map;
 
-  map_publisher_->publish(map);
+    map.header.stamp = now();
+    map.header.frame_id = "map";
 
-  RCLCPP_INFO(
+    map.info.resolution = grid_resolution_;
+    map.info.width = grid_width_;
+    map.info.height = grid_height_;
+
+    map.info.origin.position.x =
+      grid_origin_ - grid_resolution_ / 2.0;
+
+    map.info.origin.position.y =
+      grid_origin_ - grid_resolution_ / 2.0;
+
+    map.info.origin.orientation.w = 1.0;
+
+    map.data.resize(occupied_.size());
+
+    for (std::size_t i = 0;
+      i < occupied_.size(); ++i)
+    {
+      map.data[i] =
+        occupied_[i] ? 100 : 0;
+    }
+
+    map_publisher_->publish(map);
+
+    RCLCPP_INFO(
     get_logger(),
     "Published occupancy grid on /grid_map");
-}
+  }
 
   std::vector<int> plan()
   {
@@ -240,10 +240,10 @@ void publish_grid_map()
     });
 
     const int direction_x[8] =
-      {1, 1, 0, -1, -1, -1, 0, 1};
+    {1, 1, 0, -1, -1, -1, 0, 1};
 
     const int direction_y[8] =
-      {0, 1, 1, 1, 0, -1, -1, -1};
+    {0, 1, 1, 1, 0, -1, -1, -1};
 
     int expanded_nodes = 0;
     bool found = false;
@@ -373,153 +373,153 @@ void publish_grid_map()
 
     return path;
   }
-bool line_is_free(
-  int start_index,
-  int end_index) const
-{
-  auto [x0, y0] =
-    from_index(start_index);
+  bool line_is_free(
+    int start_index,
+    int end_index) const
+  {
+    auto [x0, y0] =
+      from_index(start_index);
 
-  const auto [x1, y1] =
-    from_index(end_index);
+    const auto [x1, y1] =
+      from_index(end_index);
 
-  const int dx = std::abs(x1 - x0);
-  const int sx = x0 < x1 ? 1 : -1;
+    const int dx = std::abs(x1 - x0);
+    const int sx = x0 < x1 ? 1 : -1;
 
-  const int dy = -std::abs(y1 - y0);
-  const int sy = y0 < y1 ? 1 : -1;
+    const int dy = -std::abs(y1 - y0);
+    const int sy = y0 < y1 ? 1 : -1;
 
-  int error = dx + dy;
+    int error = dx + dy;
 
-  while (true) {
-    if (
-      !inside_grid(x0, y0) ||
-      occupied_[to_index(x0, y0)])
-    {
-      return false;
+    while (true) {
+      if (
+        !inside_grid(x0, y0) ||
+        occupied_[to_index(x0, y0)])
+      {
+        return false;
+      }
+
+      if (x0 == x1 && y0 == y1) {
+        break;
+      }
+
+      const int doubled_error =
+        2 * error;
+
+      if (doubled_error >= dy) {
+        error += dy;
+        x0 += sx;
+      }
+
+      if (doubled_error <= dx) {
+        error += dx;
+        y0 += sy;
+      }
     }
 
-    if (x0 == x1 && y0 == y1) {
-      break;
-    }
-
-    const int doubled_error =
-      2 * error;
-
-    if (doubled_error >= dy) {
-      error += dy;
-      x0 += sx;
-    }
-
-    if (doubled_error <= dx) {
-      error += dx;
-      y0 += sy;
-    }
+    return true;
   }
 
-  return true;
-}
+  std::vector<int> simplify_path(
+    const std::vector<int> & raw_path) const
+  {
+    if (raw_path.size() <= 2) {
+      return raw_path;
+    }
 
-std::vector<int> simplify_path(
-  const std::vector<int> & raw_path) const
-{
-  if (raw_path.size() <= 2) {
-    return raw_path;
-  }
+    std::vector<int> simplified;
+    std::size_t current = 0;
 
-  std::vector<int> simplified;
-  std::size_t current = 0;
+    simplified.push_back(raw_path.front());
 
-  simplified.push_back(raw_path.front());
+    while (current < raw_path.size() - 1) {
+      std::size_t next =
+        raw_path.size() - 1;
 
-  while (current < raw_path.size() - 1) {
-    std::size_t next =
-      raw_path.size() - 1;
-
-    while (
-      next > current + 1 &&
-      !line_is_free(
+      while (
+        next > current + 1 &&
+        !line_is_free(
         raw_path[current],
         raw_path[next]))
-    {
-      --next;
-    }
+      {
+        --next;
+      }
 
-    simplified.push_back(
+      simplified.push_back(
       raw_path[next]);
 
-    current = next;
+      current = next;
+    }
+
+    return simplified;
   }
 
-  return simplified;
-}
-
-std::vector<std::pair<double, double>>
-densify_path(
-  const std::vector<int> & sparse_path) const
-{
-  std::vector<
-    std::pair<double, double>> dense_path;
-
-  if (sparse_path.empty()) {
-    return dense_path;
-  }
-
-  const double spacing = 0.1;
-
-  for (std::size_t segment = 0;
-    segment + 1 < sparse_path.size();
-    ++segment)
+  std::vector<std::pair<double, double>>
+  densify_path(
+    const std::vector<int> & sparse_path) const
   {
-    const auto [x0_grid, y0_grid] =
-      from_index(sparse_path[segment]);
+    std::vector<
+      std::pair<double, double>> dense_path;
 
-    const auto [x1_grid, y1_grid] =
-      from_index(sparse_path[segment + 1]);
+    if (sparse_path.empty()) {
+      return dense_path;
+    }
 
-    const double x0 =
-      grid_to_world(x0_grid);
-    const double y0 =
-      grid_to_world(y0_grid);
+    const double spacing = 0.1;
 
-    const double x1 =
-      grid_to_world(x1_grid);
-    const double y1 =
-      grid_to_world(y1_grid);
+    for (std::size_t segment = 0;
+      segment + 1 < sparse_path.size();
+      ++segment)
+    {
+      const auto [x0_grid, y0_grid] =
+        from_index(sparse_path[segment]);
 
-    const double distance =
-      std::hypot(x1 - x0, y1 - y0);
+      const auto [x1_grid, y1_grid] =
+        from_index(sparse_path[segment + 1]);
 
-    const int steps = std::max(
+      const double x0 =
+        grid_to_world(x0_grid);
+      const double y0 =
+        grid_to_world(y0_grid);
+
+      const double x1 =
+        grid_to_world(x1_grid);
+      const double y1 =
+        grid_to_world(y1_grid);
+
+      const double distance =
+        std::hypot(x1 - x0, y1 - y0);
+
+      const int steps = std::max(
       1,
       static_cast<int>(
-        std::ceil(distance / spacing)));
+          std::ceil(distance / spacing)));
 
-    for (int step = 0;
-      step < steps;
-      ++step)
-    {
-      const double ratio =
-        static_cast<double>(step) /
-        static_cast<double>(steps);
+      for (int step = 0;
+        step < steps;
+        ++step)
+      {
+        const double ratio =
+          static_cast<double>(step) /
+          static_cast<double>(steps);
 
-      dense_path.push_back({
-        x0 + ratio * (x1 - x0),
-        y0 + ratio * (y1 - y0)
+        dense_path.push_back({
+          x0 + ratio * (x1 - x0),
+          y0 + ratio * (y1 - y0)
       });
+      }
     }
-  }
 
-  const auto [last_x_grid, last_y_grid] =
-    from_index(sparse_path.back());
+    const auto [last_x_grid, last_y_grid] =
+      from_index(sparse_path.back());
 
-  dense_path.push_back({
-    grid_to_world(last_x_grid),
-    grid_to_world(last_y_grid)
+    dense_path.push_back({
+      grid_to_world(last_x_grid),
+      grid_to_world(last_y_grid)
   });
 
-  return dense_path;
-}
+    return dense_path;
+  }
 
   void publish_path(
     const std::vector<int> & path_indices)
@@ -527,26 +527,26 @@ densify_path(
     nav_msgs::msg::Path path;
     path.header.stamp = now();
     path.header.frame_id = "map";
-const auto simplified_path =
-  simplify_path(path_indices);
+    const auto simplified_path =
+      simplify_path(path_indices);
 
-const auto dense_path =
-  densify_path(simplified_path);
+    const auto dense_path =
+      densify_path(simplified_path);
 
-   for (const auto & point : dense_path) {
-      
+    for (const auto & point : dense_path) {
+
 
       geometry_msgs::msg::PoseStamped pose;
       pose.header = path.header;
       pose.pose.position.x = point.first;
-pose.pose.position.y = point.second;
+      pose.pose.position.y = point.second;
       pose.pose.orientation.w = 1.0;
 
       path.poses.push_back(pose);
     }
 
     path_publisher_->publish(path);
-RCLCPP_INFO(
+    RCLCPP_INFO(
   get_logger(),
   "Path processing: raw=%zu, "
   "simplified=%zu, dense=%zu",
@@ -561,9 +561,9 @@ RCLCPP_INFO(
   rclcpp::Publisher<
     nav_msgs::msg::Path>::SharedPtr
     path_publisher_;
-rclcpp::Publisher<
-  nav_msgs::msg::OccupancyGrid>::SharedPtr
-  map_publisher_;
+  rclcpp::Publisher<
+    nav_msgs::msg::OccupancyGrid>::SharedPtr
+    map_publisher_;
 
   std::vector<bool> occupied_;
 

@@ -90,18 +90,18 @@ private:
   }
 
   void pose_callback(
-  const nav_msgs::msg::Odometry::SharedPtr message)
-{
-  pose_x_ = message->pose.pose.position.x;
-  pose_y_ = message->pose.pose.position.y;
+    const nav_msgs::msg::Odometry::SharedPtr message)
+  {
+    pose_x_ = message->pose.pose.position.x;
+    pose_y_ = message->pose.pose.position.y;
 
-  const auto & q = message->pose.pose.orientation;
-  pose_theta_ = std::atan2(
+    const auto & q = message->pose.pose.orientation;
+    pose_theta_ = std::atan2(
     2.0 * (q.w * q.z + q.x * q.y),
     1.0 - 2.0 * (q.y * q.y + q.z * q.z));
 
-  pose_received_ = true;
-}
+    pose_received_ = true;
+  }
 
   void publish_stop()
   {
@@ -185,14 +185,14 @@ private:
           get_logger(),
           "Path completed: distance=%.3f",
           final_distance);
-const double rmse =
-  error_sample_count_ > 0
-  ? std::sqrt(
+        const double rmse =
+          error_sample_count_ > 0 ?
+          std::sqrt(
       squared_error_sum_ /
-      static_cast<double>(error_sample_count_))
-  : 0.0;
+      static_cast<double>(error_sample_count_)) :
+          0.0;
 
-RCLCPP_INFO(
+        RCLCPP_INFO(
   get_logger(),
   "Tracking metrics: RMSE=%.3f, "
   "max_error=%.3f, samples=%zu",
@@ -205,21 +205,21 @@ RCLCPP_INFO(
     }
 
     nearest_index_ = find_nearest_index();
-const auto & nearest_point =
-  path_[nearest_index_].pose.position;
+    const auto & nearest_point =
+      path_[nearest_index_].pose.position;
 
-const double tracking_error = std::hypot(
+    const double tracking_error = std::hypot(
   nearest_point.x - pose_x_,
   nearest_point.y - pose_y_);
 
-squared_error_sum_ +=
-  tracking_error * tracking_error;
+    squared_error_sum_ +=
+      tracking_error * tracking_error;
 
-max_tracking_error_ = std::max(
+    max_tracking_error_ = std::max(
   max_tracking_error_,
   tracking_error);
 
-++error_sample_count_;
+    ++error_sample_count_;
     const std::size_t target_index =
       find_lookahead_index(nearest_index_);
 
@@ -307,9 +307,9 @@ max_tracking_error_ = std::max(
 
   std::size_t nearest_index_{0};
   std::size_t control_count_{0};
-std::size_t error_sample_count_{0};
-double squared_error_sum_{0.0};
-double max_tracking_error_{0.0};
+  std::size_t error_sample_count_{0};
+  double squared_error_sum_{0.0};
+  double max_tracking_error_{0.0};
 
   bool path_received_{false};
   bool pose_received_{false};

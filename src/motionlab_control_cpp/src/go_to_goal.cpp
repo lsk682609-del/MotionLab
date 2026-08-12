@@ -39,7 +39,7 @@ public:
         &GoToGoalCpp::pose_callback,
         this,
         std::placeholders::_1));
-goal_subscription_ = create_subscription<geometry_msgs::msg::Point>(
+    goal_subscription_ = create_subscription<geometry_msgs::msg::Point>(
   "/goal_point",
   10,
   std::bind(
@@ -66,27 +66,27 @@ private:
     pose_received_ = true;
   }
 
-void goal_callback(
-  const geometry_msgs::msg::Point::SharedPtr message)
-{
-  const auto result = this->set_parameters_atomically({
-    rclcpp::Parameter("goal_x", message->x),
-    rclcpp::Parameter("goal_y", message->y)
+  void goal_callback(
+    const geometry_msgs::msg::Point::SharedPtr message)
+  {
+    const auto result = this->set_parameters_atomically({
+      rclcpp::Parameter("goal_x", message->x),
+      rclcpp::Parameter("goal_y", message->y)
   });
 
-  if (result.successful) {
-    RCLCPP_INFO(
+    if (result.successful) {
+      RCLCPP_INFO(
       get_logger(),
       "New goal received: (%.2f, %.2f)",
       message->x,
       message->y);
-  } else {
-    RCLCPP_WARN(
+    } else {
+      RCLCPP_WARN(
       get_logger(),
       "Failed to update goal: %s",
       result.reason.c_str());
+    }
   }
-}
   static double normalize_angle(double angle)
   {
     return std::atan2(std::sin(angle), std::cos(angle));
@@ -108,13 +108,13 @@ void goal_callback(
     if (!pose_received_) {
       return;
     }
-goal_x_ = this->get_parameter("goal_x").as_double();
-goal_y_ = this->get_parameter("goal_y").as_double();
-k_linear_ = this->get_parameter("k_linear").as_double();
-k_angular_ = this->get_parameter("k_angular").as_double();
-max_linear_speed_ = this->get_parameter("max_linear_speed").as_double();
-max_angular_speed_ = this->get_parameter("max_angular_speed").as_double();
-goal_tolerance_ = this->get_parameter("goal_tolerance").as_double();
+    goal_x_ = this->get_parameter("goal_x").as_double();
+    goal_y_ = this->get_parameter("goal_y").as_double();
+    k_linear_ = this->get_parameter("k_linear").as_double();
+    k_angular_ = this->get_parameter("k_angular").as_double();
+    max_linear_speed_ = this->get_parameter("max_linear_speed").as_double();
+    max_angular_speed_ = this->get_parameter("max_angular_speed").as_double();
+    goal_tolerance_ = this->get_parameter("goal_tolerance").as_double();
     const double dx = goal_x_ - pose_.x;
     const double dy = goal_y_ - pose_.y;
     const double distance_error = std::hypot(dx, dy);
@@ -176,7 +176,7 @@ goal_tolerance_ = this->get_parameter("goal_tolerance").as_double();
   rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr
     subscription_;
 
-rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr goal_subscription_;
+  rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr goal_subscription_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   turtlesim::msg::Pose pose_;

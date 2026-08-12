@@ -1,5 +1,5 @@
-import rclpy
 from geometry_msgs.msg import Twist
+import rclpy
 from rclpy.node import Node
 
 
@@ -11,7 +11,6 @@ class CircleController(Node):
 
         self.linear_speed = self.get_parameter('linear_speed').value
         self.angular_speed = self.get_parameter('angular_speed').value
-
 
         self.publisher = self.create_publisher(
             Twist,
@@ -47,4 +46,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-

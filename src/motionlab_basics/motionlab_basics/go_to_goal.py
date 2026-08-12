@@ -1,7 +1,8 @@
 import math
 
-import rclpy
 from geometry_msgs.msg import Twist
+
+import rclpy
 from rclpy.node import Node
 from turtlesim.msg import Pose
 
