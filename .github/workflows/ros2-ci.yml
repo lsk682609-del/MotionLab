@@ -23,4 +23,5 @@ jobs:
         uses: ros-tooling/action-ros-ci@v0.4
         with:
           package-name: motionlab_basics motionlab_control_cpp motionlab_robot_description motionlab_simulation
+          import-token: ${{ secrets.GITHUB_TOKEN }}
           target-ros2-distro: jazzy
