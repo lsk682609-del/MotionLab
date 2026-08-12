@@ -4,6 +4,7 @@ from turtlesim.msg import Pose
 
 
 class PoseMonitor(Node):
+
     def __init__(self):
         super().__init__('pose_monitor')
 

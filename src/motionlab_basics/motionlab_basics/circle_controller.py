@@ -4,6 +4,7 @@ from rclpy.node import Node
 
 
 class CircleController(Node):
+
     def __init__(self):
         super().__init__('circle_controller')
         self.declare_parameter('linear_speed', 2.0)

@@ -8,6 +8,7 @@ from turtlesim.msg import Pose
 
 
 class GoToGoalController(Node):
+
     def __init__(self):
         super().__init__('go_to_goal')
 
