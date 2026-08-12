@@ -1,0 +1,9 @@
+go_to_goal:
+  ros__parameters:
+    goal_x: 8.0
+    goal_y: 8.0
+    k_linear: 1.0
+    k_angular: 4.0
+    max_linear_speed: 2.0
+    max_angular_speed: 4.0
+    goal_tolerance: 0.1
