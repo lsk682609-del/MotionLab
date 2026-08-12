@@ -32,7 +32,7 @@ public:
 
     velocity_publisher_ =
       create_publisher<geometry_msgs::msg::Twist>(
-        "/cmd_vel", 10);
+        "/cmd_vel_raw", 10);
 
     auto path_qos = rclcpp::QoS(1)
       .reliable()

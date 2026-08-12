@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(turtlesim REQUIRED)
 
 if(BUILD_TESTING)
@@ -102,4 +103,11 @@ install(
   TARGETS astar_planner
   DESTINATION lib/${PROJECT_NAME}
 )
+add_executable(lidar_safety_stop src/lidar_safety_stop.cpp)
+ament_target_dependencies(lidar_safety_stop rclcpp geometry_msgs sensor_msgs)
+
+install(TARGETS lidar_safety_stop
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_package()

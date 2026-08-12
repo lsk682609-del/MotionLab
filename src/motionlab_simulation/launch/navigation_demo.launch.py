@@ -96,6 +96,21 @@ def generate_launch_description():
         ]
     )
 
+    safety_stop = TimerAction(
+        period=4.0,
+        actions=[
+            Node(
+                package="motionlab_control_cpp",
+                executable="lidar_safety_stop",
+                output="screen",
+                parameters=[{
+                    "use_sim_time": True,
+                    "stop_distance": 0.4,
+                    "front_angle_deg": 30.0
+                }]
+            )
+        ]
+    )
     rviz_config = os.path.join(
         robot_share,
         'rviz',
@@ -126,5 +141,6 @@ def generate_launch_description():
         map_to_odom,
         planner,
         rviz,
+        safety_stop,
         controller
     ])
