@@ -36,7 +36,6 @@ if(BUILD_TESTING)
   # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
-  ament_add_gtest(test_astar_smoke test/test_astar_smoke.cpp)
 
   ament_add_gtest(
     test_astar_core
@@ -121,6 +120,11 @@ ament_target_dependencies(
   rclcpp
   geometry_msgs
   nav_msgs
+)
+
+target_link_libraries(
+  astar_planner
+  astar_core
 )
 
 install(

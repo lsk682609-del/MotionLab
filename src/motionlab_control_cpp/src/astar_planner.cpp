@@ -1,8 +1,6 @@
 #include <algorithm>
 #include <cmath>
-#include <limits>
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
@@ -10,22 +8,7 @@
 #include "nav_msgs/msg/occupancy_grid.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-struct SearchState
-{
-  int index;
-  double f_cost;
-};
-
-struct CompareState
-{
-  bool operator()(
-    const SearchState & left,
-    const SearchState & right) const
-  {
-    return left.f_cost > right.f_cost;
-  }
-};
+#include "motionlab_control_cpp/astar_core.hpp"
 
 class AStarPlanner : public rclcpp::Node
 {
@@ -56,7 +39,26 @@ public:
     build_obstacle_map();
     publish_grid_map();
 
-    const auto path_indices = plan();
+    const int start_grid_x =
+      world_to_grid(start_x_);
+    const int start_grid_y =
+      world_to_grid(start_y_);
+    const int goal_grid_x =
+      world_to_grid(goal_x_);
+    const int goal_grid_y =
+      world_to_grid(goal_y_);
+
+    AStarCore astar_core(
+      grid_width_,
+      grid_height_,
+      grid_resolution_,
+      occupied_);
+
+    const auto path_indices = astar_core.plan(
+      start_grid_x,
+      start_grid_y,
+      goal_grid_x,
+      goal_grid_y);
 
     if (path_indices.empty()) {
       RCLCPP_ERROR(
@@ -101,18 +103,6 @@ private:
   {
     return grid_origin_ +
            value * grid_resolution_;
-  }
-
-  double heuristic(
-    int x,
-    int y,
-    int goal_x,
-    int goal_y) const
-  {
-    return std::hypot(
-      static_cast<double>(goal_x - x),
-      static_cast<double>(goal_y - y)) *
-           grid_resolution_;
   }
 
   void build_obstacle_map()
@@ -172,207 +162,6 @@ private:
     "Published occupancy grid on /grid_map");
   }
 
-  std::vector<int> plan()
-  {
-    const int start_grid_x =
-      world_to_grid(start_x_);
-    const int start_grid_y =
-      world_to_grid(start_y_);
-    const int goal_grid_x =
-      world_to_grid(goal_x_);
-    const int goal_grid_y =
-      world_to_grid(goal_y_);
-
-    if (
-      !inside_grid(start_grid_x, start_grid_y) ||
-      !inside_grid(goal_grid_x, goal_grid_y))
-    {
-      RCLCPP_ERROR(
-        get_logger(),
-        "Start or goal is outside the grid");
-      return {};
-    }
-
-    const int start_index =
-      to_index(start_grid_x, start_grid_y);
-    const int goal_index =
-      to_index(goal_grid_x, goal_grid_y);
-
-    if (
-      occupied_[start_index] ||
-      occupied_[goal_index])
-    {
-      RCLCPP_ERROR(
-        get_logger(),
-        "Start or goal is occupied");
-      return {};
-    }
-
-    const int cell_count =
-      grid_width_ * grid_height_;
-
-    std::vector<double> g_cost(
-      cell_count,
-      std::numeric_limits<double>::infinity());
-
-    std::vector<int> parent(
-      cell_count,
-      -1);
-
-    std::vector<bool> closed(
-      cell_count,
-      false);
-
-    std::priority_queue<
-      SearchState,
-      std::vector<SearchState>,
-      CompareState> open_set;
-
-    g_cost[start_index] = 0.0;
-
-    open_set.push({
-      start_index,
-      heuristic(
-        start_grid_x,
-        start_grid_y,
-        goal_grid_x,
-        goal_grid_y)
-    });
-
-    const int direction_x[8] =
-    {1, 1, 0, -1, -1, -1, 0, 1};
-
-    const int direction_y[8] =
-    {0, 1, 1, 1, 0, -1, -1, -1};
-
-    int expanded_nodes = 0;
-    bool found = false;
-
-    while (!open_set.empty()) {
-      const SearchState current =
-        open_set.top();
-      open_set.pop();
-
-      if (closed[current.index]) {
-        continue;
-      }
-
-      closed[current.index] = true;
-      ++expanded_nodes;
-
-      if (current.index == goal_index) {
-        found = true;
-        break;
-      }
-
-      const auto [current_x, current_y] =
-        from_index(current.index);
-
-      for (int i = 0; i < 8; ++i) {
-        const int next_x =
-          current_x + direction_x[i];
-
-        const int next_y =
-          current_y + direction_y[i];
-
-        if (!inside_grid(next_x, next_y)) {
-          continue;
-        }
-
-        const int next_index =
-          to_index(next_x, next_y);
-
-        if (
-          occupied_[next_index] ||
-          closed[next_index])
-        {
-          continue;
-        }
-
-        // Prevent diagonal corner cutting.
-        if (
-          direction_x[i] != 0 &&
-          direction_y[i] != 0)
-        {
-          const int side_a =
-            to_index(next_x, current_y);
-
-          const int side_b =
-            to_index(current_x, next_y);
-
-          if (
-            occupied_[side_a] ||
-            occupied_[side_b])
-          {
-            continue;
-          }
-        }
-
-        const double step_cost =
-          std::hypot(
-            static_cast<double>(direction_x[i]),
-            static_cast<double>(direction_y[i])) *
-          grid_resolution_;
-
-        const double tentative_cost =
-          g_cost[current.index] +
-          step_cost;
-
-        if (tentative_cost < g_cost[next_index]) {
-          g_cost[next_index] =
-            tentative_cost;
-
-          parent[next_index] =
-            current.index;
-
-          const double f_cost =
-            tentative_cost +
-            heuristic(
-              next_x,
-              next_y,
-              goal_grid_x,
-              goal_grid_y);
-
-          open_set.push({
-            next_index,
-            f_cost
-          });
-        }
-      }
-    }
-
-    if (!found) {
-      return {};
-    }
-
-    std::vector<int> path;
-    int current_index = goal_index;
-
-    while (current_index != -1) {
-      path.push_back(current_index);
-
-      if (current_index == start_index) {
-        break;
-      }
-
-      current_index =
-        parent[current_index];
-    }
-
-    std::reverse(
-      path.begin(),
-      path.end());
-
-    RCLCPP_INFO(
-      get_logger(),
-      "A* success: expanded=%d, "
-      "path_points=%zu, path_length=%.2f",
-      expanded_nodes,
-      path.size(),
-      g_cost[goal_index]);
-
-    return path;
-  }
   bool line_is_free(
     int start_index,
     int end_index) const
