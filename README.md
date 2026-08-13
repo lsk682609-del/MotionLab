@@ -274,6 +274,47 @@ Tracking metrics: RMSE=0.162, max_error=0.707, samples=1153
 
 ---
 
+### Lookahead Parameter Experiment
+
+为分析 Pure Pursuit 前视距离对路径跟踪性能的影响，分别测试：
+
+`0.1 m`、`0.3 m`、`0.6 m` 和 `1.2 m`
+
+实验保持其他控制参数与规划路径一致，并记录 RMSE、最大跟踪误差、终点距离和控制采样数量。
+
+| Lookahead | RMSE | Max Error | Goal Distance | Samples |
+|---:|---:|---:|---:|---:|
+| `0.1 m` | 0.160 m | 0.707 m | 0.147 m | 1239 |
+| `0.3 m` | **0.158 m** | 0.707 m | 0.146 m | 1190 |
+| `0.6 m` | 0.162 m | 0.707 m | **0.146 m** | 1153 |
+| `1.2 m` | 0.185 m | 0.707 m | 0.148 m | 1116 |
+
+#### RMSE Comparison
+
+![Pure Pursuit lookahead RMSE](docs/images/lookahead_rmse.png)
+
+#### Tracking Samples
+
+![Pure Pursuit lookahead samples](docs/images/lookahead_samples.png)
+
+### Experiment Analysis
+
+实验表明，前视距离对 Pure Pursuit 的跟踪精度和控制响应存在明显影响。
+
+- `0.3 m` 获得最低 RMSE，为 `0.158 m`。
+- `0.6 m` 的 RMSE 为 `0.162 m`，相比 `0.3 m` 仅增加约 2.5%。
+- 当 lookahead 增大到 `1.2 m` 时，RMSE 上升到 `0.185 m`，说明过大的前视距离会降低弯道跟踪精度。
+- 较小的 lookahead 会使控制器对局部路径变化更加敏感，并产生更激进的曲率与速度调整。
+- `samples` 表示控制器累计的误差采样数量，仅作为运行过程的辅助指标，不直接等同于完成时间。
+
+因此项目最终采用：
+
+> **`lookahead_distance = 0.6 m`**
+
+虽然 `0.3 m` 获得略低的 RMSE，但 `0.6 m` 在保持接近跟踪精度的同时具有更平缓的控制响应，因此作为跟踪精度与运动平滑性之间的折中参数。
+
+---
+
 ## 6. LiDAR Safety Control
 
 Pure Pursuit 输出的速度不会直接发送给机器人。
