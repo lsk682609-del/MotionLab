@@ -13,8 +13,21 @@ find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(turtlesim REQUIRED)
 
+add_library(
+  astar_core
+  src/astar_core.cpp
+)
+
+target_include_directories(
+  astar_core
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
   # the following line skips the linter which checks for copyrights
   # comment the line when a copyright and license is added to all source files
   set(ament_cmake_copyright_FOUND TRUE)
@@ -23,6 +36,17 @@ if(BUILD_TESTING)
   # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+  ament_add_gtest(test_astar_smoke test/test_astar_smoke.cpp)
+
+  ament_add_gtest(
+    test_astar_core
+    test/test_astar_core.cpp
+  )
+
+  target_link_libraries(
+    test_astar_core
+    astar_core
+  )
 endif()
 add_executable(go_to_goal_cpp src/go_to_goal.cpp)
 
