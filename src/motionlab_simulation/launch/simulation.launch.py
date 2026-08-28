@@ -8,6 +8,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command
 
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -33,11 +34,16 @@ def generate_launch_description():
         'motionlab_world.sdf',
     )
 
+   
+    
     robot_description = {
-        'robot_description': Command([
+        'robot_description': ParameterValue(
+            Command([
             'xacro ',
             xacro_file,
-        ])
+        ]),
+        value_type=str,
+        )
     }
 
     gazebo = IncludeLaunchDescription(

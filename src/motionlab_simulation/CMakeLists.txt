@@ -23,8 +23,13 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(DIRECTORY launch worlds
+install(DIRECTORY
+  launch
+  worlds
+  config
+  maps
   DESTINATION share/${PROJECT_NAME}
 )
+
 
 ament_package()

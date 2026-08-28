@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <limits>
 
@@ -12,23 +13,31 @@ public:
   LidarSafetyStop()
   : Node("lidar_safety_stop")
   {
-    stop_distance_ = declare_parameter<double>("stop_distance", 0.6);
-    release_margin_ = declare_parameter<double>("release_margin", 0.1);
+    stop_distance_ = declare_parameter<double>("stop_distance", 0.35);
+    release_margin_ = declare_parameter<double>("release_margin", 0.10);
     front_angle_ = declare_parameter<double>("front_angle_deg", 30.0) * M_PI / 180.0;
+    scan_timeout_ = declare_parameter<double>("scan_timeout", 0.5);
+    cmd_timeout_ = declare_parameter<double>("cmd_timeout", 0.5);
 
+    last_scan_time_ = this->now();
+    last_cmd_time_ = this->now();
     cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
     cmd_sub_ = create_subscription<geometry_msgs::msg::Twist>(
       "/cmd_vel_raw", 10,
       [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
+        last_cmd_time_ = this->now();
+        cmd_timed_out_ = false;
         geometry_msgs::msg::Twist safe_cmd = *msg;
+
 
         if (obstacle_detected_ && safe_cmd.linear.x > 0.0) {
           safe_cmd.linear.x = 0.0;
-          safe_cmd.angular.z = 0.0;
+
           RCLCPP_WARN_THROTTLE(
             get_logger(), *get_clock(), 1000,
-            "Emergency stop: obstacle at %.2f m", min_front_range_);
+            "Forward motion blocked: obstacle at %.2f m",
+            min_front_range_);
         }
 
         cmd_pub_->publish(safe_cmd);
@@ -37,6 +46,8 @@ public:
     scan_sub_ = create_subscription<sensor_msgs::msg::LaserScan>(
       "/scan", rclcpp::SensorDataQoS(),
       [this](const sensor_msgs::msg::LaserScan::SharedPtr scan) {
+        last_scan_time_ = this->now();
+        scan_timed_out_ = false;
         min_front_range_ = std::numeric_limits<double>::infinity();
 
         for (std::size_t i = 0; i < scan->ranges.size(); ++i) {
@@ -61,6 +72,45 @@ public:
         }
       });
 
+
+    watchdog_timer_ = create_wall_timer(
+      std::chrono::milliseconds(100),
+      [this]() {
+        const auto now = this->now();
+
+        const double scan_dt =
+        (now - last_scan_time_).seconds();
+
+        if (scan_dt > scan_timeout_) {
+          if (!scan_timed_out_) {
+            RCLCPP_ERROR(
+              get_logger(),
+              "LiDAR timeout: no /scan for %.2f s",
+              scan_dt);
+          }
+
+          scan_timed_out_ = true;
+          obstacle_detected_ = true;
+        }
+
+        const double cmd_dt =
+        (now - last_cmd_time_).seconds();
+
+        if (cmd_dt > cmd_timeout_) {
+          if (!cmd_timed_out_) {
+            geometry_msgs::msg::Twist stop_cmd;
+            cmd_pub_->publish(stop_cmd);
+
+            RCLCPP_WARN(
+              get_logger(),
+              "Command timeout: no /cmd_vel_raw for %.2f s, robot stopped",
+              cmd_dt);
+          }
+
+          cmd_timed_out_ = true;
+        }
+      });
+
     RCLCPP_INFO(
       get_logger(),
       "Safety stop ready: stop_distance=%.2f m, front_angle=%.1f deg",
@@ -71,8 +121,19 @@ private:
   double stop_distance_;
   double release_margin_;
   double front_angle_;
-  double min_front_range_{std::numeric_limits<double>::infinity()};
+  double scan_timeout_;
+  double cmd_timeout_;
+
+  double min_front_range_{
+    std::numeric_limits<double>::infinity()};
+
   bool obstacle_detected_{true};
+  bool scan_timed_out_{false};
+  bool cmd_timed_out_{false};
+
+  rclcpp::Time last_scan_time_;
+  rclcpp::Time last_cmd_time_;
+  rclcpp::TimerBase::SharedPtr watchdog_timer_;
 
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;

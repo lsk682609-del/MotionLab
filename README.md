@@ -505,28 +505,100 @@ source install/setup.bash
 
 ## 10. Run Navigation Demo
 
-启动完整导航：
+当前 WSL2 环境采用：
 
-~~~bash
-ros2 launch motionlab_simulation navigation_demo.launch.py
-~~~
+> Navigation Backend 自动启动 + RViz 手动启动
 
-修改 Pure Pursuit 前视距离：
+详细操作参见：
 
-~~~bash
-ros2 launch motionlab_simulation navigation_demo.launch.py lookahead_distance:=0.6
-~~~
+[`docs/NAVIGATION_RUNBOOK.md`](docs/NAVIGATION_RUNBOOK.md)
 
-Demo 会启动：
+### Terminal 1 — Navigation Backend
+
+```bash
+cd ~/motionlab_ws
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+
+ros2 launch motionlab_simulation navigation_demo.launch.py \
+  use_rviz:=false
+```
+
+后台自动启动：
 
 - Gazebo Sim
 - Robot Description
+- ros_gz_bridge
+- static `map -> odom` TF
+- map_server
+- lifecycle manager
 - A* Planner
 - Pure Pursuit Controller
 - LiDAR Safety Stop
-- RViz2
 
----
+### Terminal 2 — RViz
+
+```bash
+cd ~/motionlab_ws
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+
+QT_QPA_PLATFORM=xcb \
+GALLIUM_DRIVER=d3d12 \
+rviz2
+```
+
+RViz 中手动添加：
+
+```text
+Fixed Frame = map
+
+Grid
+RobotModel
+Map /map
+Path /planned_path
+```
+
+如果 RViz 后启动没有收到地图，可在第三个终端执行：
+
+```bash
+ros2 lifecycle set /map_server deactivate
+ros2 lifecycle set /map_server activate
+```
+
+当前导航链路：
+
+```text
+Static Map
+    ↓
+A* + Inflation
+    ↓
+/planned_path
+    ↓
+Pure Pursuit
+    ↓
+/cmd_vel_raw
+    ↓
+LiDAR Safety Stop
+    ↓
+/cmd_vel
+    ↓
+Gazebo
+```
+
+当前主要参数：
+
+| Module | Parameter | Value |
+|---|---|---:|
+| A* | `inflation_radius` | `0.25 m` |
+| Pure Pursuit | `lookahead_distance` | `0.40 m` |
+| Pure Pursuit | `nominal_speed` | `0.15 m/s` |
+| Pure Pursuit | `max_angular_speed` | `0.80 rad/s` |
+| Pure Pursuit | `goal_tolerance` | `0.12 m` |
+| Safety Stop | `stop_distance` | `0.35 m` |
+| Safety Stop | `release_margin` | `0.10 m` |
+| Safety Stop | `front_angle_deg` | `30°` |
+
 
 ## 11. Project Structure
 

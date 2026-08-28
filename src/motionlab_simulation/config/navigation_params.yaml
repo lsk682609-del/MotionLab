@@ -1,0 +1,21 @@
+astar_planner:
+  ros__parameters:
+    use_sim_time: true
+    inflation_radius: 0.25
+
+pure_pursuit_controller:
+  ros__parameters:
+    use_sim_time: true
+    lookahead_distance: 0.40
+    nominal_speed: 0.15
+    max_angular_speed: 0.80
+    goal_tolerance: 0.12
+
+lidar_safety_stop:
+  ros__parameters:
+    use_sim_time: true
+    stop_distance: 0.35
+    release_margin: 0.10
+    front_angle_deg: 30.0
+    scan_timeout: 0.5
+    cmd_timeout: 0.5

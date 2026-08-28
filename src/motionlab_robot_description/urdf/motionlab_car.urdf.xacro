@@ -45,7 +45,7 @@
     </collision>
 
     <inertial>
-      <origin xyz="0 0 0.06" rpy="0 0 0"/>
+      <origin xyz="-0.05 0 0.05" rpy="0 0 0"/>
       <mass value="5.0"/>
       <inertia ixx="0.0435" ixy="0.0" ixz="0.0"
                iyy="0.0904" iyz="0.0"
@@ -126,12 +126,39 @@
       </geometry>
       <material name="lidar_gray"/>
     </visual>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia
+      ixx="0.00004625"
+      ixy="0.0"
+      ixz="0.0"
+      iyy="0.00004625"
+      iyz="0.0"
+      izz="0.000075625"/>
+    </inertial>
   </link>
 
   <joint name="lidar_joint" type="fixed">
     <parent link="base_link"/>
     <child link="lidar_link"/>
     <origin xyz="0.08 0 0.19" rpy="0 0 0"/>
+  </joint>
+
+  
+
+  <link name="imu_link">
+    <visual>
+      <geometry>
+        <box size="0.04 0.03 0.015"/>
+      </geometry>
+      <material name="lidar_gray"/>
+    </visual>
+  </link>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.10" rpy="0 0 0"/>
   </joint>
 
   <gazebo>
@@ -144,6 +171,15 @@
 
       <wheel_separation>${wheel_separation}</wheel_separation>
       <wheel_radius>${wheel_radius}</wheel_radius>
+        <!-- Motion limits: avoid sudden pitch during start / stop -->
+      <max_linear_acceleration>0.30</max_linear_acceleration>
+      <min_linear_acceleration>-0.30</min_linear_acceleration>
+
+      <max_angular_acceleration>0.80</max_angular_acceleration>
+      <min_angular_acceleration>-0.80</min_angular_acceleration>
+
+      <max_linear_jerk>1.0</max_linear_jerk>
+      <min_linear_jerk>-1.0</min_linear_jerk>
 
       <topic>/cmd_vel</topic>
       <odom_topic>/odom</odom_topic>
@@ -154,17 +190,19 @@
       <child_frame_id>base_footprint</child_frame_id>
     </plugin>
   </gazebo>
-  <gazebo reference="lidar_link">
+  <gazebo reference="base_link">
     <sensor name="lidar_sensor" type="gpu_lidar">
+      <pose>0.08 0 0.19 0 0 0</pose>
       <topic>/scan</topic>
-      <update_rate>5</update_rate>
+      <gz_frame_id>lidar_link</gz_frame_id>
+      <update_rate>10</update_rate>
       <always_on>true</always_on>
       <visualize>false</visualize>
 
       <lidar>
         <scan>
           <horizontal>
-            <samples>180</samples>
+            <samples>360</samples>
             <resolution>1</resolution>
             <min_angle>-3.14159</min_angle>
             <max_angle>3.14159</max_angle>
