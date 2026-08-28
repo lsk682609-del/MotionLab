@@ -15,9 +15,11 @@ def generate_launch_description():
     description_share = get_package_share_directory(
         'motionlab_robot_description'
     )
+
     simulation_share = get_package_share_directory(
         'motionlab_simulation'
     )
+
     ros_gz_sim_share = get_package_share_directory(
         'ros_gz_sim'
     )
@@ -34,15 +36,13 @@ def generate_launch_description():
         'motionlab_world.sdf',
     )
 
-   
-    
     robot_description = {
         'robot_description': ParameterValue(
             Command([
-            'xacro ',
-            xacro_file,
-        ]),
-        value_type=str,
+                'xacro ',
+                xacro_file,
+            ]),
+            value_type=str,
         )
     }
 

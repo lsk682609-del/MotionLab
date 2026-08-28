@@ -16,7 +16,6 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-
     # ---------------------------------------------------------
     # Launch arguments
     # ---------------------------------------------------------
@@ -26,7 +25,7 @@ def generate_launch_description():
     declare_use_rviz = DeclareLaunchArgument(
         'use_rviz',
         default_value='false',
-        description='Start RViz2 visualization'
+        description='Start RViz2 visualization',
     )
 
     # ---------------------------------------------------------
@@ -40,7 +39,6 @@ def generate_launch_description():
     robot_share = get_package_share_directory(
         'motionlab_robot_description'
     )
-
 
     # ---------------------------------------------------------
     # Files
@@ -127,22 +125,22 @@ def generate_launch_description():
     # ---------------------------------------------------------
 
     lifecycle_manager = TimerAction(
-    period=8.0,
-    actions=[
-        Node(
-            package='nav2_lifecycle_manager',
-            executable='lifecycle_manager',
-            name='lifecycle_manager_map',
-            output='screen',
-            parameters=[
-                {
-                    'use_sim_time': True,
-                    'autostart': True,
-                    'node_names': ['map_server']
-                }
-            ]
-        )
-    ]
+        period=8.0,
+        actions=[
+            Node(
+                package='nav2_lifecycle_manager',
+                executable='lifecycle_manager',
+                name='lifecycle_manager_map',
+                output='screen',
+                parameters=[
+                    {
+                        'use_sim_time': True,
+                        'autostart': True,
+                        'node_names': ['map_server']
+                    }
+                ]
+            )
+        ]
     )
 
     # ---------------------------------------------------------
@@ -189,28 +187,31 @@ def generate_launch_description():
 
     # ---------------------------------------------------------
     # RViz
+    #
+    # Default: disabled.
+    # In WSL2 the recommended workflow is to start RViz manually.
     # ---------------------------------------------------------
 
     rviz = Node(
-    condition=IfCondition(use_rviz),
-    package='rviz2',
-    executable='rviz2',
-    name='rviz2',
-    arguments=[
-        '-d',
-        rviz_config
-    ],
-    parameters=[
-        {
-            'use_sim_time': True
+        condition=IfCondition(use_rviz),
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=[
+            '-d',
+            rviz_config
+        ],
+        parameters=[
+            {
+                'use_sim_time': True
+            }
+        ],
+        output='screen',
+        additional_env={
+            'QT_QPA_PLATFORM': 'xcb',
+            'GALLIUM_DRIVER': 'd3d12'
         }
-    ],
-    output='screen',
-    additional_env={
-        'QT_QPA_PLATFORM': 'xcb',
-        'GALLIUM_DRIVER': 'd3d12'
-    }
-  )
+    )
 
     # ---------------------------------------------------------
     # Complete system
@@ -218,18 +219,12 @@ def generate_launch_description():
 
     return LaunchDescription([
         declare_use_rviz,
-
         simulation_launch,
-
         map_to_odom,
-
         map_server,
-        
-
         planner,
         safety_stop,
         controller,
-
         rviz,
         lifecycle_manager,
     ])
