@@ -19,13 +19,13 @@ public:
   : Node("pure_pursuit_controller")
   {
     lookahead_distance_ =
-      declare_parameter<double>("lookahead_distance", 0.6);
+      declare_parameter<double>("lookahead_distance", 0.4);
 
     nominal_speed_ =
-      declare_parameter<double>("nominal_speed", 1.0);
+      declare_parameter<double>("nominal_speed", 0.20);
 
     max_angular_speed_ =
-      declare_parameter<double>("max_angular_speed", 3.0);
+      declare_parameter<double>("max_angular_speed", 0.8);
 
     goal_tolerance_ =
       declare_parameter<double>("goal_tolerance", 0.12);
@@ -80,13 +80,32 @@ private:
   {
     path_ = message->poses;
     nearest_index_ = 0;
-    path_received_ = !path_.empty();
+
     goal_reached_ = false;
 
-    RCLCPP_INFO(
+    squared_error_sum_ = 0.0;
+    max_tracking_error_ = 0.0;
+    error_sample_count_ = 0;
+    control_count_ = 0;
+
+
+    if (path_.empty()) {
+      path_received_ = false;
+      publish_stop();
+
+      RCLCPP_WARN(
       get_logger(),
-      "Received path with %zu points",
-      path_.size());
+      "Received empty path. Controller stopped");
+
+      return;
+    }
+
+    path_received_ = true;
+
+    RCLCPP_INFO(
+    get_logger(),
+    "Received new path with %zu points. Tracking metrics reset",
+    path_.size());
   }
 
   void pose_callback(

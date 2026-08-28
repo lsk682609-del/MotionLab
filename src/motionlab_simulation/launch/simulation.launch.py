@@ -8,15 +8,18 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command
 
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
     description_share = get_package_share_directory(
         'motionlab_robot_description'
     )
+
     simulation_share = get_package_share_directory(
         'motionlab_simulation'
     )
+
     ros_gz_sim_share = get_package_share_directory(
         'ros_gz_sim'
     )
@@ -34,10 +37,13 @@ def generate_launch_description():
     )
 
     robot_description = {
-        'robot_description': Command([
-            'xacro ',
-            xacro_file,
-        ])
+        'robot_description': ParameterValue(
+            Command([
+                'xacro ',
+                xacro_file,
+            ]),
+            value_type=str,
+        )
     }
 
     gazebo = IncludeLaunchDescription(

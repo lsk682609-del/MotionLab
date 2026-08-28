@@ -79,6 +79,171 @@
       </link>
     </model>
 
+        <!-- ============================= -->
+    <!-- MotionLab SLAM test arena     -->
+    <!-- ============================= -->
+
+    <!-- Front wall -->
+    <model name="wall_front">
+      <static>true</static>
+      <pose>4.5 0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.10 9.0 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.10 9.0 1.0</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Rear wall -->
+    <model name="wall_rear">
+      <static>true</static>
+      <pose>-4.5 0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.10 9.0 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.10 9.0 1.0</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Left wall -->
+    <model name="wall_left">
+      <static>true</static>
+      <pose>0 4.5 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>9.0 0.10 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>9.0 0.10 1.0</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Right wall -->
+    <model name="wall_right">
+      <static>true</static>
+      <pose>0 -4.5 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>9.0 0.10 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>9.0 0.10 1.0</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Obstacle 1 -->
+    <model name="obstacle_1">
+      <static>true</static>
+      <pose>2.0 1.5 0.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.8 0.8 0.8</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.8 0.8 0.8</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Obstacle 2 -->
+    <model name="obstacle_2">
+      <static>true</static>
+      <pose>-1.8 -1.5 0.4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1.0 0.6 0.8</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.0 0.6 0.8</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Obstacle 3 -->
+    <model name="obstacle_3">
+      <static>true</static>
+      <pose>-1.5 2.2 0.5 0 0 0.45</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1.4 0.4 1.0</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.4 0.4 1.0</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    
   </world>
 
 </sdf>
